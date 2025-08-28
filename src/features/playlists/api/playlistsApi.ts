@@ -20,13 +20,8 @@ export const playlistsApi = createApi({
   endpoints: build => ({
     // Типизация аргументов (<возвращаемый тип, тип query аргументов (`QueryArg`)>)
     // `query` по умолчанию создает запрос `get` и указание метода необязательно
-    fetchPlaylists: build.query<PlaylistsResponse, FetchPlaylistsArgs>({
-      query: () => {
-        return {
-          method: 'get',
-          url: `playlists`,
-        }
-      },
+    fetchPlaylists: build.query<PlaylistsResponse, void>({
+      query: () => `playlists`
     }),
   }),
 })
