@@ -2,9 +2,8 @@ import { MainPage } from "@/app/ui/MainPage/MainPage"
 import { ProfilePage } from "@/features/auth/ui/ProfilePage/ProfilePage"
 import { PlaylistsPage } from "@/features/playlists/ui/PlaylistsPage/PlaylistsPage"
 import { TracksPage } from "@/features/tracks/ui/TracksPage/TracksPage"
-import { PageNotFound } from "@/common/components/PageNotFound/PageNotFound"
 import { Route, Routes } from "react-router"
-
+import { PageNotFound } from "@/common/components"
 
 export const Path = {
   Main: '/',
