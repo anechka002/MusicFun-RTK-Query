@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import {
   useFetchPlaylistsQuery,
-  useRemovePlaylistMutation,
-  useUpdatePlaylistMutation,
 } from '../../api/playlistsApi';
 import { CreatePlaylistForm } from '../CreatePlaylistForm/CreatePlaylistForm';
 import s from './PlaylistsPage.module.css';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import type {
   PlaylistData,
   UpdatePlaylistArgs,
@@ -57,7 +55,7 @@ export const PlaylistsPage = () => {
               ) : (
                 <PlaylistItem
                   playlist={playlist}
-                  editPlaylistHandler={editPlaylistHandler}
+                  editPlaylist={editPlaylistHandler}
                 />
               )}
             </div>

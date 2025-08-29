@@ -3,10 +3,10 @@ import type { PlaylistData } from '../../api/playlistsApi.types';
 
 type Props = {
   playlist: PlaylistData;
-  editPlaylistHandler: (playlist: PlaylistData) => void
+  editPlaylist: (playlist: PlaylistData) => void
 };
 
-export const PlaylistItem = ({ playlist, editPlaylistHandler }: Props) => {
+export const PlaylistItem = ({ playlist, editPlaylist }: Props) => {
 
   const [removePlaylist] = useRemovePlaylistMutation();
 
@@ -15,14 +15,14 @@ export const PlaylistItem = ({ playlist, editPlaylistHandler }: Props) => {
       removePlaylist(playlistId);
     }
   };
-  
+
   return (
     <div>
       <div>title: {playlist.attributes.title}</div>
       <div>description: {playlist.attributes.description}</div>
       <div>userName: {playlist.attributes.user.name}</div>
       <button onClick={() => removePlaylistHandler(playlist.id)}>delete</button>
-      <button onClick={() => editPlaylistHandler(playlist)}>update</button>
+      <button onClick={() => editPlaylist(playlist)}>update</button>
     </div>
   );
 };
