@@ -34,9 +34,16 @@ export const playlistsApi = createApi({
           body
       })
     }),
+    removePlaylist: build.mutation<void, string>({
+      query: (playlistId) => ({
+          method: 'delete',
+          url: `playlists/${playlistId}`,
+      })
+    }),
+    
   }),
 })
 
 // `createApi` создает объект `API`, который содержит все эндпоинты в виде хуков,
 // определенные в свойстве `endpoints`
-export const { useFetchPlaylistsQuery, useCreatePlaylistMutation } = playlistsApi
+export const { useFetchPlaylistsQuery, useCreatePlaylistMutation, useRemovePlaylistMutation } = playlistsApi
