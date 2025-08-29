@@ -21,31 +21,36 @@ export const playlistsApi = createApi({
   // `endpoints` - метод, возвращающий объект с эндпоинтами для `API`, описанными
   // с помощью функций, которые будут вызываться при вызове соответствующих методов `API`
   // (например `get`, `post`, `put`, `patch`, `delete`)
+  tagTypes: ['Playlist'],
   endpoints: build => ({
     // Типизация аргументов (<возвращаемый тип, тип query аргументов (`QueryArg`)>)
     // `query` по умолчанию создает запрос `get` и указание метода необязательно
     fetchPlaylists: build.query<PlaylistsResponse, void>({
-      query: () => `playlists`
+      query: () => `playlists`,
+      providesTags: ['Playlist'],
     }),
     createPlaylist: build.mutation<{data: PlaylistData}, CreatePlaylistArgs>({
       query: (body) => ({
           method: 'post',
           url: `playlists`,
           body
-      })
+      }),
+      invalidatesTags: ['Playlist'],
     }),
     removePlaylist: build.mutation<void, string>({
       query: (playlistId) => ({
           method: 'delete',
           url: `playlists/${playlistId}`,
-      })
+      }),
+      invalidatesTags: ['Playlist'],
     }),
     updatePlaylist: build.mutation<void, {playlistId: string; body: UpdatePlaylistArgs}>({
       query: ({playlistId, body}) => ({
           method: 'put',
           url: `playlists/${playlistId}`,
           body
-      })
+      }),
+      invalidatesTags: ['Playlist'],
     }),
   }),
 })
