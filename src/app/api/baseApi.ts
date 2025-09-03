@@ -5,10 +5,8 @@ export const baseApi = createApi({
   tagTypes: ['Playlist'],
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_BASE_URL,
-    headers: {
-      'API-KEY': import.meta.env.VITE_API_KEY,
-    },
-    prepareHeaders: headers => {
+    prepareHeaders: (headers) => {
+      headers.set('API-KEY', import.meta.env.VITE_API_KEY,)
       headers.set('Authorization', `Bearer ${import.meta.env.VITE_ACCESS_TOKEN}`)
       return headers
     },
