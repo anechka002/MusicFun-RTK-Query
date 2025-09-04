@@ -1,7 +1,9 @@
-import React from 'react'
+import {useGetMeQuery} from "@/features/auth/api/authApi.ts";
 
 export const ProfilePage = () => {
+  const { data } = useGetMeQuery()
+
   return (
-    <div>ProfilePage</div>
+    <h1>{data?.login} page</h1>
   )
 }
