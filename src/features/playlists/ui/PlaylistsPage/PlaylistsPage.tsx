@@ -5,16 +5,18 @@ import {
 import { CreatePlaylistForm } from '../CreatePlaylistForm/CreatePlaylistForm';
 import s from './PlaylistsPage.module.css';
 import {useDebounceValue} from "@/common/hooks";
-import {Pagination} from "@/common/components/Pagination/Pagination.tsx";
 import {
   PlaylistsList
 } from "@/features/playlists/ui/PlaylistsList/PlaylistsList.tsx";
-
+import { Pagination } from "@/common/components";
+import {
+  PlaylistSkeleton
+} from "@/features/playlists/ui/PlaylistSkeleton/PlaylistSkeleton.tsx";
 
 export const PlaylistsPage = () => {
-  const [search, setSearch] = useState('')
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(2);
+  const [search, setSearch] = useState<string>('')
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(2);
   const debounceSearch = useDebounceValue(search)
   const { data, isLoading } = useFetchPlaylistsQuery({
     search: debounceSearch,
@@ -22,7 +24,7 @@ export const PlaylistsPage = () => {
     pageSize,
   });
 
-  if (isLoading) return <p>Loading...</p>;
+  const skeletons = [...new Array(8)].map((_, i) => <PlaylistSkeleton key={i} />);
 
   const changePageSizeHandler = (pageSize: number) => {
     setPageSize(pageSize);
@@ -34,10 +36,12 @@ export const PlaylistsPage = () => {
     setSearch(e.currentTarget.value)
   }
 
+  if(isLoading) return skeletons;
+
   return (
     <div className={s.container}>
       <h1>Playlists page</h1>
-      <CreatePlaylistForm />
+      <CreatePlaylistForm onPlaylistCreated={() => setCurrentPage(1)}/>
       <input
         type="search"
         placeholder={'Search playlist by title'}
