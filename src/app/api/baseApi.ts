@@ -1,6 +1,11 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
 import {toast} from "react-toastify";
-import {isErrorWithError, isErrorWithMessage} from "@/common/utils";
+import {
+  isErrorWithError,
+  isErrorWithMessage,
+  isErrorWithProperty
+} from "@/common/utils";
+import error = toast.error;
 
 export const baseApi = createApi({
   reducerPath: 'baseApi',
@@ -20,7 +25,7 @@ export const baseApi = createApi({
     if(result.error) {
       switch (result.error.status) {
         case 404:
-          if(isErrorWithError(result.error.data)) {
+          if(isErrorWithProperty(result.error.data, 'error')) {
             toast(result.error.data.error, { type: 'error', theme: 'colored' })
           } else {
             toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
@@ -33,7 +38,7 @@ export const baseApi = createApi({
           // ✅ 2. JSON.stringify
           // toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
           // ✅ 3. Type Predicate
-          if (isErrorWithMessage(result.error.data)) {
+          if (isErrorWithProperty(result.error.data, 'message')) {
             toast(result.error.data.message, { type: 'error', theme: 'colored' })
           } else {
             toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
