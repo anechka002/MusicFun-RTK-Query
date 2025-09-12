@@ -27,11 +27,54 @@ export const playlistsApi = baseApi.injectEndpoints({
       invalidatesTags: ['Playlist'],
     }),
     updatePlaylist: build.mutation<void, {playlistId: string; body: UpdatePlaylistArgs}>({
-      query: ({playlistId, body}) => ({
+      query: ({playlistId, body}) => {
+        console.log('4')
+        return {
           method: 'put',
           url: `playlists/${playlistId}`,
           body
-      }),
+        }
+      },
+      onQueryStarted: async ({ playlistId, body }, { dispatch, queryFulfilled, getState }) => {
+        console.log('1')
+
+        const args = playlistsApi.util.selectCachedArgsForQuery(getState(), 'fetchPlaylists')
+
+        const patchResults: any[] = []
+        // debugger
+
+        args.forEach((arg) => {
+          patchResults.push(
+            dispatch(
+              playlistsApi.util.updateQueryData(
+                // название эндпоинта, в котором нужно обновить кэш
+                'fetchPlaylists',
+                // аргументы для эндпоинта
+                { pageNumber: arg.pageNumber, pageSize: arg.pageSize, search: arg.search },
+                // `updateRecipe` - коллбэк для обновления закэшированного стейта мутабельным образом
+                state => {
+                  console.log('2')
+                  const index = state.data.findIndex(playlist => playlist.id === playlistId)
+                  if (index !== -1) {
+                    state.data[index].attributes = { ...state.data[index].attributes, ...body }
+                  }
+                }
+              )
+            )
+          )
+        })
+
+        try {
+          console.log('3')
+          await queryFulfilled
+          console.log('5 success')
+        } catch {
+          patchResults.forEach(patchResult => {
+            patchResult.undo()
+          })
+          console.log('5 error')
+        }
+      },
       invalidatesTags: ['Playlist'],
     }),
     uploadPlaylistCover: build.mutation<Images, {playlistId: string; file: File}>({
