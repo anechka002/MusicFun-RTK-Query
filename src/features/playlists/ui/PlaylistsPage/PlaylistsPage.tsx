@@ -24,18 +24,6 @@ export const PlaylistsPage = () => {
     pageSize,
   });
 
-  // if(error) {
-  //   if('status' in error) {
-  //     // FetchBaseQueryError
-  //     const errMsg = 'error' in error ? error.error : (error.data as { error: string }).error
-  //     toast(errMsg, { type: 'error', theme: 'colored' })
-  //   } else {
-  //     // SerializedError
-  //     toast(error.message || 'Some error occurred', { type: 'error', theme: 'colored' })
-  //   }
-  //   // toast(error.data.error, {type: "error", theme: 'colored'});
-  // }
-
   const skeletons = [...new Array(8)].map((_, i) => <PlaylistSkeleton key={i} />);
 
   const changePageSizeHandler = (pageSize: number) => {

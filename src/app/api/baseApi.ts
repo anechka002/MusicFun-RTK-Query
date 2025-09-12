@@ -1,11 +1,5 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react'
-import {toast} from "react-toastify";
-import {
-  isErrorWithError,
-  isErrorWithMessage,
-  isErrorWithProperty
-} from "@/common/utils";
-import error = toast.error;
+import { handleErrors } from "@/common/utils";
 
 export const baseApi = createApi({
   reducerPath: 'baseApi',
@@ -23,31 +17,7 @@ export const baseApi = createApi({
     })(args, api, extraOptions)
 
     if(result.error) {
-      switch (result.error.status) {
-        case 404:
-          if(isErrorWithProperty(result.error.data, 'error')) {
-            toast(result.error.data.error, { type: 'error', theme: 'colored' })
-          } else {
-            toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
-          }
-          break
-
-        case 429: // API KEY
-          // ✅ 1. Type Assertions
-          // toast((result.error.data as { message: string }).message, { type: 'error', theme: 'colored' })
-          // ✅ 2. JSON.stringify
-          // toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
-          // ✅ 3. Type Predicate
-          if (isErrorWithProperty(result.error.data, 'message')) {
-            toast(result.error.data.message, { type: 'error', theme: 'colored' })
-          } else {
-            toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
-          }
-          break
-
-        default:
-          toast('Some error occurred', { type: 'error', theme: 'colored' })
-      }
+      handleErrors(result.error)
     }
 
     return result
