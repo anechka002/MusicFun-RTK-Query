@@ -1,8 +1,5 @@
-import {toast} from "react-toastify";
-import {isErrorWithProperty} from "@/common/utils/isErrorWithProperty.ts";
-import {isErrorWithDetailArray} from "@/common/utils/isErrorWithDetailArray.ts";
-import {trimToMaxLength} from "@/common/utils/trimToMaxLength.ts";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import {errorToast, isErrorWithProperty, isErrorWithDetailArray, trimToMaxLength} from "@/common/utils";
 
 export const handleErrors = (error: FetchBaseQueryError) => {
   if(error) {
@@ -12,30 +9,30 @@ export const handleErrors = (error: FetchBaseQueryError) => {
       case 'PARSING_ERROR':
       case 'CUSTOM_ERROR':
       case 'TIMEOUT_ERROR':
-        toast(error.error, { type: 'error', theme: 'colored' })
+        errorToast(error.error)
         break
 
       case 404:
         if(isErrorWithProperty(error.data, 'error')) {
-          toast(error.data.error, { type: 'error', theme: 'colored' })
+          errorToast(error.data.error)
         } else {
-          toast(JSON.stringify(error.data), { type: 'error', theme: 'colored' })
+          errorToast(JSON.stringify(error.data))
         }
         break
 
       case 403:
         if (isErrorWithDetailArray(error.data)) {
-          toast(error.data.errors[0].detail, { type: "error", theme: "colored" })
+          errorToast(error.data.errors[0].detail,)
         } else {
-          toast(JSON.stringify(error.data), { type: "error", theme: "colored" })
+          errorToast(JSON.stringify(error.data))
         }
         break
 
       case 400:
         if (isErrorWithDetailArray(error.data)) {
-          toast(trimToMaxLength(error.data.errors[0].detail), { type: "error", theme: "colored" })
+          errorToast(trimToMaxLength(error.data.errors[0].detail))
         } else {
-          toast(JSON.stringify(error.data), { type: "error", theme: "colored" })
+          errorToast(JSON.stringify(error.data))
         }
         break
 
@@ -47,17 +44,17 @@ export const handleErrors = (error: FetchBaseQueryError) => {
                 // toast(JSON.stringify(result.error.data), { type: 'error', theme: 'colored' })
                 // ✅ 3. Type Predicate
         if (isErrorWithProperty(error.data, 'message')) {
-          toast(error.data.message, { type: 'error', theme: 'colored' })
+          errorToast(error.data.message)
         } else {
-          toast(JSON.stringify(error.data), { type: 'error', theme: 'colored' })
+          errorToast(JSON.stringify(error.data))
         }
         break
 
       default:
         if (error.status >= 500 && error.status < 600) {
-          toast("Server error occurred. Please try again later.", { type: "error", theme: "colored" })
+          errorToast("Server error occurred. Please try again later.", error)
         } else {
-          toast("Some error occurred", { type: "error", theme: "colored" })
+          errorToast("Some error occurred")
         }
     }
   }
