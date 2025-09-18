@@ -3,11 +3,7 @@ import type {CreatePlaylistArgs} from "../../api/playlistsApi.types"
 import {useCreatePlaylistMutation} from "../../api/playlistsApi"
 import s from './CreatePlaylistForm.module.css'
 
-type Props = {
-  onPlaylistCreated: () => void
-}
-
-export const CreatePlaylistForm = ({onPlaylistCreated}: Props) => {
+export const CreatePlaylistForm = () => {
   const {register, handleSubmit, reset, formState: { errors },} = useForm<CreatePlaylistArgs>()
 
   const [createPlaylist] = useCreatePlaylistMutation()
@@ -16,13 +12,7 @@ export const CreatePlaylistForm = ({onPlaylistCreated}: Props) => {
     createPlaylist(data)
       .unwrap()
       .then(() => {
-        onPlaylistCreated()
-      })
-      .catch(error => {
-        console.log('Ошибка при создании плейлиста:', error)
-      })
-      .finally(() => {
-        reset() // 🧹 очищаем поля всегда
+        reset()
       })
   }
 
