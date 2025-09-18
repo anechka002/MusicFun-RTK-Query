@@ -6,4 +6,8 @@ export const baseApi = createApi({
   tagTypes: ['Playlist', 'Auth'],
   baseQuery: baseQueryWithReauth,
   endpoints: () => ({}),
+  // Zod добавляет в проект десятки килобайт к бандлу, в production zod можно отключить
+  // skipSchemaValidation: process.env.NODE_ENV === 'production',
 })
+
+// console.log(process.env.NODE_ENV)
