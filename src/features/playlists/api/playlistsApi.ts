@@ -1,22 +1,29 @@
 import { baseApi } from '@/app/api/baseApi'
 import type {
   CreatePlaylistArgs,
-  FetchPlaylistsArgs, PlaylistData, PlaylistsResponse, UpdatePlaylistArgs
+  FetchPlaylistsArgs, UpdatePlaylistArgs
 } from './playlistsApi.types'
-import type { Images } from '@/common/types';
+import {
+  playlistCreateResponseSchema,
+  playlistsResponseSchema
+} from "@/features/playlists/model/playlists.schemas.ts";
+import {withZodCatch} from "@/common/utils";
+import {imagesSchema} from "@/common/schemas";
 
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: build => ({
-    fetchPlaylists: build.query<PlaylistsResponse, FetchPlaylistsArgs>({
-      query: (params) => ({url: `playlists`, params}),
+    fetchPlaylists: build.query({
+      query: (params: FetchPlaylistsArgs) => ({url: `playlists`, params}),
+      ...withZodCatch(playlistsResponseSchema),
       providesTags: ['Playlist'],
     }),
-    createPlaylist: build.mutation<{data: PlaylistData}, CreatePlaylistArgs>({
-      query: (body) => ({
+    createPlaylist: build.mutation({
+      query: (body: CreatePlaylistArgs) => ({
           method: 'post',
           url: `playlists`,
           body
       }),
+      ...withZodCatch(playlistCreateResponseSchema),
       invalidatesTags: ['Playlist'],
     }),
     removePlaylist: build.mutation<void, string>({
@@ -78,8 +85,8 @@ export const playlistsApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Playlist'],
     }),
-    uploadPlaylistCover: build.mutation<Images, {playlistId: string; file: File}>({
-      query: ({playlistId, file}) => {
+    uploadPlaylistCover: build.mutation({
+      query: ({playlistId, file}: { playlistId: string; file: File }) => {
         const formData = new FormData()
         formData.append('file', file)
         return {
@@ -88,6 +95,7 @@ export const playlistsApi = baseApi.injectEndpoints({
           body: formData
         }
       },
+      ...withZodCatch(imagesSchema),
       invalidatesTags: ['Playlist'],
     }),
     deletePlaylistCover: build.mutation<void, {playlistId: string}>({
