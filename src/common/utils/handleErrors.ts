@@ -30,13 +30,14 @@ export const handleErrors = (error: FetchBaseQueryError) => {
 
       case 400:
         if (isErrorWithDetailArray(error.data)) {
+          const errorMessage = error.data.errors[0].detail
+          if(errorMessage.includes('refresh')) return
           errorToast(trimToMaxLength(error.data.errors[0].detail))
         } else {
           errorToast(JSON.stringify(error.data))
         }
         break
 
-      case 401:
       case 429: // API KEY
                 // ✅ 1. Type Assertions
                 // toast((result.error.data as { message: string }).message, { type: 'error', theme: 'colored' })
