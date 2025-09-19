@@ -23,36 +23,36 @@ export const playlistsApi = baseApi.injectEndpoints({
         // Ждем разрешения начального запроса перед продолжением
         await cacheDataLoaded
 
-        const unsubscribe = subscribeToEvents<PlaylistCreatedEvent>(SOCKET_EVENTS.PLAYLIST_CREATED, (msg: PlaylistCreatedEvent) => {
-          // 1 вариант
-          const newPlaylist = msg.payload.data
-          updateCachedData(state => {
-            state.data.pop()
-            state.data.unshift(newPlaylist)
-            state.meta.totalCount = state.meta.totalCount + 1
-            state.meta.pagesCount = Math.ceil(state.meta.totalCount / state.meta.pageSize)
+        const unsubscribes = [
+          subscribeToEvents<PlaylistCreatedEvent>(SOCKET_EVENTS.PLAYLIST_CREATED, (msg: PlaylistCreatedEvent) => {
+            // 1 вариант
+            const newPlaylist = msg.payload.data
+            updateCachedData(state => {
+              state.data.pop()
+              state.data.unshift(newPlaylist)
+              state.meta.totalCount = state.meta.totalCount + 1
+              state.meta.pagesCount = Math.ceil(state.meta.totalCount / state.meta.pageSize)
+            })
+            // 2 вариант
+            // dispatch(playlistsApi.util.invalidateTags(['Playlist']))
+          }),
+          subscribeToEvents<PlaylistUpdatedEvent>(SOCKET_EVENTS.PLAYLIST_UPDATED, (msg: PlaylistUpdatedEvent) => {
+            // 1 вариант
+            const newPlaylist = msg.payload.data
+            updateCachedData(state => {
+              const index = state.data.findIndex(playlist => playlist.id === newPlaylist.id)
+              if (index !== -1) {
+                state.data[index] = { ...state.data[index], ...newPlaylist }
+              }
+            })
+            // 2 вариант
+            // dispatch(playlistsApi.util.invalidateTags(['Playlist']))
           })
-          // 2 вариант
-          // dispatch(playlistsApi.util.invalidateTags(['Playlist']))
-        })
-
-        const unsubscribe2 = subscribeToEvents<PlaylistUpdatedEvent>(SOCKET_EVENTS.PLAYLIST_UPDATED, (msg: PlaylistUpdatedEvent) => {
-          // 1 вариант
-          const newPlaylist = msg.payload.data
-          updateCachedData(state => {
-            const index = state.data.findIndex(playlist => playlist.id === newPlaylist.id)
-            if (index !== -1) {
-              state.data[index] = { ...state.data[index], ...newPlaylist }
-            }
-          })
-          // 2 вариант
-          // dispatch(playlistsApi.util.invalidateTags(['Playlist']))
-        })
+        ]
 
         // CacheEntryRemoved разрешится, когда подписка на кеш больше не активна
         await cacheEntryRemoved
-        unsubscribe()
-        unsubscribe2()
+        unsubscribes.forEach(unsubscribe => unsubscribe())
       },
       providesTags: ['Playlist'],
     }),
