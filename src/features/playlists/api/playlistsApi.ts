@@ -1,7 +1,8 @@
 import { baseApi } from '@/app/api/baseApi'
 import type {
   CreatePlaylistArgs,
-  FetchPlaylistsArgs, PlaylistCreatedEvent, UpdatePlaylistArgs
+  FetchPlaylistsArgs, PlaylistCreatedEvent,
+  PlaylistUpdatedEvent, UpdatePlaylistArgs
 } from './playlistsApi.types'
 import {
   playlistCreateResponseSchema,
@@ -35,9 +36,23 @@ export const playlistsApi = baseApi.injectEndpoints({
           // dispatch(playlistsApi.util.invalidateTags(['Playlist']))
         })
 
+        const unsubscribe2 = subscribeToEvents<PlaylistUpdatedEvent>(SOCKET_EVENTS.PLAYLIST_UPDATED, (msg: PlaylistUpdatedEvent) => {
+          // 1 вариант
+          const newPlaylist = msg.payload.data
+          updateCachedData(state => {
+            const index = state.data.findIndex(playlist => playlist.id === newPlaylist.id)
+            if (index !== -1) {
+              state.data[index] = { ...state.data[index], ...newPlaylist }
+            }
+          })
+          // 2 вариант
+          // dispatch(playlistsApi.util.invalidateTags(['Playlist']))
+        })
+
         // CacheEntryRemoved разрешится, когда подписка на кеш больше не активна
         await cacheEntryRemoved
         unsubscribe()
+        unsubscribe2()
       },
       providesTags: ['Playlist'],
     }),
