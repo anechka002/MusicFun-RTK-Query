@@ -9,9 +9,8 @@ import {
 } from "@/features/playlists/model/playlists.schemas.ts";
 import {withZodCatch} from "@/common/utils";
 import {imagesSchema} from "@/common/schemas";
-import {io, Socket} from "socket.io-client";
 import {SOCKET_EVENTS} from "@/common/constans";
-import {subscribeToEvents} from "@/common/socket/subscribeToEvents.ts";
+import {subscribeToEvents} from "@/common/socket";
 
 export const playlistsApi = baseApi.injectEndpoints({
   endpoints: build => ({
@@ -23,15 +22,7 @@ export const playlistsApi = baseApi.injectEndpoints({
         // Ждем разрешения начального запроса перед продолжением
         await cacheDataLoaded
 
-        // Создаем Socket.IO соединение с сервером
-        const socket: Socket = io(import.meta.env.VITE_SOCKET_URL, {
-          path: '/api/1.0/ws', // пользовательский путь для Socket.IO сервера (по умолчанию '/socket.io/')
-          transports: ['websocket'],
-        })
-
-        socket.on('connect', () => console.log('✅ Connected to server'))
-
-        socket.on(SOCKET_EVENTS.PLAYLIST_CREATED, (msg: PlaylistCreatedEvent) => {
+        const unsubscribe = subscribeToEvents<PlaylistCreatedEvent>(SOCKET_EVENTS.PLAYLIST_CREATED, (msg: PlaylistCreatedEvent) => {
           // 1 вариант
           const newPlaylist = msg.payload.data
           updateCachedData(state => {
@@ -46,8 +37,7 @@ export const playlistsApi = baseApi.injectEndpoints({
 
         // CacheEntryRemoved разрешится, когда подписка на кеш больше не активна
         await cacheEntryRemoved
-        // Выполняем шаги очистки после разрешения промиса `cacheEntryRemoved`
-        socket.on('disconnect', () => console.log('❌ Соединение разорвано'))
+        unsubscribe()
       },
       providesTags: ['Playlist'],
     }),
