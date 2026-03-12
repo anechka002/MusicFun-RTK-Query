@@ -1,11 +1,11 @@
-import {Header, LinearProgress} from "@/common/components"
-import { Routing } from "@/common/routing"
+import { useGlobalLoading } from '@/app/hooks/useGlobalLoading'
+import { AppRouter } from '@/app/router/router'
+import { LinearProgress } from '@/shared/ui'
+import { Header } from '@/widgets/header/ui/Header'
 import s from './App.module.css'
 import { ToastContainer } from "react-toastify"
-import {useGlobalLoading} from "@/common/hooks";
 
 function App() {
-
   const isGlobalLoading = useGlobalLoading()
 
   return (
@@ -13,7 +13,7 @@ function App() {
       <Header/>
       {isGlobalLoading && <LinearProgress/>}
       <div className={s.layout}>
-        <Routing/>
+        <AppRouter/>
       </div>
       <ToastContainer/>
     </>
