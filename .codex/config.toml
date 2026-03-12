@@ -1,0 +1,32 @@
+temperature = 0.2
+
+[paths]
+include = [
+  "src",
+  "public",
+  "index.html",
+  "package.json",
+  "tsconfig.json",
+  "tsconfig.*.json",
+  "vite.config.*",
+  "eslint.config.*",
+  ".eslintrc*",
+  ".prettierrc*",
+  "README.md",
+  "AGENTS.md"
+]
+exclude = [
+  "node_modules",
+  "dist",
+  "build",
+  "coverage",
+  ".next",
+  ".turbo",
+  ".cache",
+  ".vite",
+  "*.log"
+]
+
+[project]
+language = "typescript"
+framework = "react"
