@@ -1,53 +1,144 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Application code lives in `src/`:
+This repository uses Feature-Sliced Design (FSD) inside `src/`.
 
-- `src/app/` contains app-wide setup: router, store provider, global styles, and `App.tsx`.
-- `src/pages/` contains route-level screens such as `main`, `playlists`, `tracks`, `profile`, `oauth-callback`, and `not-found`.
-- `src/widgets/` contains composed UI blocks such as `header`, `playlists-list`, `playlist-skeleton`, `tracks-list`, and `loading-trigger`.
-- `src/features/` contains user actions, currently `login`, `create-playlist`, and `edit-playlist`.
-- `src/entities/` contains business slices with `api/` and `model/`, currently `session`, `playlist`, and `track`.
-- `src/shared/` contains reusable segments: `api`, `config`, `lib`, `model`, `ui`, and `assets`.
+Layers:
+- `app/` wires the application together: `App.tsx`, router, providers, store, and global styles.
+- `pages/` contains route screens for `/`, `/playlists`, `/tracks`, `/profile`, `/oauth/callback`, and the fallback page.
+- `widgets/` contains composed UI blocks such as `header`, `playlists-list`, `playlist-skeleton`, `tracks-list`, and `loading-trigger`.
+- `features/` contains user actions like `login`, `create-playlist`, and `edit-playlist`.
+- `entities/` contains domain slices such as `session`, `playlist`, and `track`.
+- `shared/` contains reusable infrastructure: API base setup, routing, constants, hooks, socket helpers, utilities, UI components, and assets.
 
-Use the `@/` alias instead of deep relative imports.
+Use the `@/` alias for imports instead of deep relative paths.
+
+## FSD Layer Rules
+
+Layers from top to bottom:
+
+app  
+pages  
+widgets  
+features  
+entities  
+shared
+
+A layer may only import from layers **below it**.
+
+Allowed examples:
+
+pages → widgets, features, entities, shared  
+widgets → features, entities, shared  
+features → entities, shared  
+entities → shared
+
+Forbidden examples:
+
+shared → features  
+entities → features  
+features → pages
+
+Never break the FSD import direction.
+
+---
+
+## Feature Structure
+
+A typical feature should follow this structure:
+
+src/features/<feature-name>/
+
+ui/
+  FeatureComponent.tsx
+
+model/
+  slice.ts
+  selectors.ts
+  types.ts
+
+api/
+  featureApi.ts
+
+Responsibilities:
+
+- `ui/` — React components and view logic
+- `model/` — business logic, selectors, state, schemas
+- `api/` — API requests and RTK Query endpoints
+
+Do not mix responsibilities across these folders.
+
+---
+
+## Entity Structure
+
+Entities represent core domain objects.
+
+Example:
+
+src/entities/<entity-name>/
+
+api/
+  entityApi.ts
+
+model/
+  entitySchema.ts
+  selectors.ts
+
+Entities may be used by **features, widgets, and pages**.
+
+---
+
+## Code Generation Rules
+
+When generating or adding new code:
+
+- place React components inside `ui/`
+- place state and business logic inside `model/`
+- place API logic inside `api/`
+- follow the existing folder structure
+- inspect nearby files before creating new ones
+
+Do not:
+
+- create components directly inside `src/`
+- create new folders like `components/`, `services/`, or `utils/` outside the FSD layers
+- duplicate shared logic inside feature folders
+
+Always prefer extending the existing architecture.
+
+---
 
 ## Build, Test, and Development Commands
-- `pnpm dev` starts the Vite dev server with HMR.
-- `pnpm build` runs TypeScript project checks and creates a production build in `dist/`.
-- `pnpm lint` runs ESLint across the repository.
-- `pnpm preview` serves the production build locally for a final smoke check.
+- `pnpm dev` runs the Vite dev server.
+- `pnpm build` runs `tsc -b` and creates the production bundle.
+- `pnpm lint` runs ESLint across `.ts` and `.tsx` files.
+- `pnpm preview` serves the production build locally.
 
-Run commands from the repository root and prefer `pnpm`; the repo is locked with `pnpm-lock.yaml`.
+There is no test runner configured yet, so `pnpm lint` and `pnpm build` are the required checks before a PR.
 
 ## Coding Style & Naming Conventions
-This project uses TypeScript strict mode, React 19, RTK Query, Zod, and CSS Modules.
+- TypeScript runs in strict mode; keep types explicit around API responses and forms.
+- No formatter is configured. Preserve the style of the file you edit.
+- Use `PascalCase` for components and folders in `ui/`, `camelCase` for hooks and helpers, and `UPPER_SNAKE_CASE` for constants like `AUTH_KEYS` and `SOCKET_EVENTS`.
+- Keep styles next to the component as `ComponentName.module.css`.
+- Follow the FSD import direction described above.
 
-- No formatter is configured. Preserve the style of the file you edit; imports currently mix alias paths and explicit `.ts` extensions.
-- Use `PascalCase` for React components and UI folders, `camelCase` for hooks, helpers, and RTK Query endpoints, and `UPPER_SNAKE_CASE` for constants such as `AUTH_KEYS` and `SOCKET_EVENTS`.
-- Keep component styles beside the component as `ComponentName.module.css`.
-- Keep FSD import direction strict: `app` may import anything below, `pages` may import `widgets/features/entities/shared`, `widgets` may import `features/entities/shared`, `features` may import `entities/shared`, and `shared` must not depend on upper layers.
-- Add API endpoints through `baseApi.injectEndpoints(...)` in `src/shared/api/baseApi.ts` and validate responses with `withZodCatch(...)` plus schemas from the owning entity `model/` folder.
-
-## Testing Guidelines
-There is no test runner configured yet. For now, `pnpm lint` and `pnpm build` are the required checks before opening a PR. If you add tests, place them next to the feature they cover and use `*.test.ts` or `*.test.tsx`.
+## Architecture Notes
+- Shared HTTP setup lives in `src/shared/api/`: `baseQuery` adds `Authorization` and `API-KEY`, and `baseQueryWithReauth` refreshes tokens through `auth/refresh` using `async-mutex`.
+- Add entity endpoints through `baseApi.injectEndpoints(...)` and validate responses with `withZodCatch(...)` plus Zod schemas from the same entity.
+- `entities/playlist/api/playlistsApi.ts` listens to Socket.IO playlist events and updates RTK Query cache.
+- `entities/track/api/tracksApi.ts` uses `build.infiniteQuery(...)` for cursor pagination.
+- `features/login/ui/Login.tsx` starts OAuth in a popup and expects the callback page to post `code` back to the opener.
 
 ## Commit & Pull Request Guidelines
-All new commits must follow the Conventional Commits 1.0.0 specification: `type(optional-scope): description`.
+Use Conventional Commits: `type(optional-scope): description`.
 
-Use this structure:
+- Preferred types here: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`.
+- Use scopes that match slices or layers, for example `feat(playlist): ...` or `refactor(shared-api): ...`.
+- Add `BREAKING CHANGE:` in the footer, or `!`, for incompatible changes.
 
-- `<type>[optional scope]: <description>`
-- `[optional body]`
-- `[optional footer(s)]`
-
-Use `feat:` for new functionality, `fix:` for bug fixes, and add `BREAKING CHANGE:` in the footer, or `!` after type/scope, for incompatible API changes. Other allowed types include `build:`, `chore:`, `ci:`, `docs:`, `style:`, `refactor:`, `perf:`, and `test:`. Scopes are optional and should describe the affected area, for example `feat(playlists): add optimistic cache update`.
-
-- `feat(playlists): add optimistic cache update`
-- `fix(auth): handle expired token refresh`
-- `refactor(api): move shared request logic into baseApi`
-
-Keep pull requests focused. Include a short description, note FSD layer moves separately from behavior changes, list new env vars, link the related issue when available, and attach screenshots for UI work.
+Keep PRs focused. Call out FSD moves separately from behavior changes, list new env vars, and attach screenshots for UI changes.
 
 ## Configuration Notes
-The app reads `VITE_BASE_URL`, `VITE_API_KEY`, `VITE_SOCKET_URL`, and `VITE_DOMAIN_ADDRESS` from `.env` or `.env.local`. `baseQuery` sends the API key on every request, and sockets connect through `/api/1.0/ws`. Do not commit real secrets.
+Environment variables are read from `.env` and `.env.local`: `VITE_BASE_URL`, `VITE_API_KEY`, `VITE_SOCKET_URL`, and `VITE_DOMAIN_ADDRESS`. Do not commit real secrets.
