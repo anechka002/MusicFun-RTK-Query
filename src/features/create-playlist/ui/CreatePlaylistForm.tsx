@@ -2,9 +2,15 @@ import {useForm, type SubmitHandler} from "react-hook-form"
 import type { CreatePlaylistArgs } from '@/entities/playlist/api/playlistsApi.types'
 import { useCreatePlaylistMutation } from '@/entities/playlist/api/playlistsApi'
 import s from './CreatePlaylistForm.module.css'
+import { handleErrors } from '@/shared/lib/utils/handleErrors'
 
 export const CreatePlaylistForm = () => {
-  const {register, handleSubmit, reset, formState: { errors },} = useForm<CreatePlaylistArgs>()
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CreatePlaylistArgs>({})
 
   const [createPlaylist] = useCreatePlaylistMutation()
 
@@ -14,6 +20,7 @@ export const CreatePlaylistForm = () => {
       .then(() => {
         reset()
       })
+      .catch(handleErrors)
   }
 
   return (
@@ -34,6 +41,7 @@ export const CreatePlaylistForm = () => {
       <div>
         <input {...register('description')} placeholder={'description'} />
       </div>
+      {errors.description && <span className={s.errorMessage}>{errors.description.message}</span>}
       <button>create playlist</button>
     </form>
   )
