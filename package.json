@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "api-client-gen": "pnpm openapi-typescript https://musicfun.it-incubator.app/api-json -o ./src/shared/api/schema.ts --root-types"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
     "@reduxjs/toolkit": "2.8.2",
     "async-mutex": "0.5.0",
+    "openapi-fetch": "^0.17.0",
     "react": "19.1.1",
     "react-content-loader": "^7.1.1",
     "react-dom": "19.1.1",
@@ -33,6 +35,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "openapi-typescript": "^7.13.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2"
