@@ -2,6 +2,7 @@ import {Link, NavLink} from 'react-router'
 import s from './Header.module.css'
 import { useGetMeQuery, useLogoutMutation } from '@/entities/session/api/authApi'
 import { Login } from '@/features/login/ui/Login'
+import { AUTH_KEYS } from '@/shared/config/constants'
 import { Path } from '@/shared/config/routes'
 
 const navItems = [
@@ -11,7 +12,8 @@ const navItems = [
 ]
 
 export const Header = () => {
-  const {data} = useGetMeQuery(undefined)
+  const hasAccessToken = Boolean(localStorage.getItem(AUTH_KEYS.accessToken))
+  const {data} = useGetMeQuery(undefined, { skip: !hasAccessToken })
   const [logout] = useLogoutMutation()
 
   const logoutHandler = () => {

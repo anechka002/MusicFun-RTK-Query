@@ -1,6 +1,7 @@
 import { useGetMeQuery } from '@/entities/session/api/authApi'
 import { useFetchPlaylistsQuery } from '@/entities/playlist/api/playlistsApi'
 import { CreatePlaylistForm } from '@/features/create-playlist/ui/CreatePlaylistForm'
+import { AUTH_KEYS } from '@/shared/config/constants'
 import { Path } from '@/shared/config/routes'
 import { PlaylistSkeleton } from '@/widgets/playlist-skeleton/ui/PlaylistSkeleton'
 import { PlaylistsList } from '@/widgets/playlists-list/ui/PlaylistsList'
@@ -8,7 +9,10 @@ import s from './ProfilePage.module.css'
 import {Navigate} from "react-router";
 
 export const ProfilePage = () => {
-  const { data: meResponse, isLoading: isMeLoading } = useGetMeQuery(undefined)
+  const hasAccessToken = Boolean(localStorage.getItem(AUTH_KEYS.accessToken))
+  const { data: meResponse, isLoading: isMeLoading } = useGetMeQuery(undefined, {
+    skip: !hasAccessToken,
+  })
   const { data: playlistsResponse, isLoading } = useFetchPlaylistsQuery({
     userId: meResponse?.userId,
   }, {skip: !meResponse?.userId});

@@ -85,8 +85,9 @@ const authMiddleware: Middleware = {
   async onResponse({ request, response, options }) {
     const isRefreshRequest = request.url.includes(REFRESH_PATH)
     const isRetriedRequest = request.headers.get(RETRY_HEADER) === 'true'
+    const hasAuthHeader = Boolean(request.headers.get('Authorization'))
 
-    if (response.status !== 401 || isRefreshRequest || isRetriedRequest) {
+    if (response.status !== 401 || isRefreshRequest || isRetriedRequest || !hasAuthHeader) {
       return response
     }
 
