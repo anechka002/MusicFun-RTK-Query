@@ -1,29 +1,41 @@
 import { baseApi } from '@/shared/api/baseApi'
-
-import type {
-  FetchTracksResponse
-} from '@/entities/track/api/tracksApi.types'
-import {
-  fetchTracksResponseSchema
-} from '@/entities/track/model/tracks.schemas'
-import { withZodCatch } from '@/shared/lib/utils'
+import {client} from "@/shared/api/client.ts";
+import type {SchemaGetTrackListOutput,} from "@/shared/api/schema.ts";
+import type {FetchTracksQuery} from "@/entities/track/api/tracksApi.types.ts";
+import {toFetchError} from "@/shared/lib/utils/handleErrors.ts";
 
 export const tracksApi = baseApi.injectEndpoints({
   endpoints: build => ({
-    fetchTracks: build.infiniteQuery<FetchTracksResponse, void, string | undefined>({
+    fetchTracks: build.infiniteQuery<SchemaGetTrackListOutput, void, string | undefined>({
       infiniteQueryOptions: {
         initialPageParam: undefined,
         getNextPageParam: lastPage => {
           return lastPage.meta.nextCursor || undefined
         },
       },
-      query: ({pageParam}) => {
-        return {
-          url: 'playlists/tracks',
-          params: {cursor: pageParam, pageSize: 5, paginationType: 'cursor'}
+      async queryFn({ pageParam }) {
+        try {
+          const query: FetchTracksQuery = {
+            cursor: pageParam,
+            pageSize: 5,
+            paginationType: 'cursor',
+          }
+
+          const result = await client.GET('/playlists/tracks', {
+            params: {
+              query,
+            },
+          })
+
+          if (!result.data) {
+            return { error: toFetchError('No data received') }
+          }
+
+          return { data: result.data }
+        } catch (error) {
+          return { error: toFetchError(error) }
         }
       },
-      ...withZodCatch(fetchTracksResponseSchema)
     }),
   }),
 })
