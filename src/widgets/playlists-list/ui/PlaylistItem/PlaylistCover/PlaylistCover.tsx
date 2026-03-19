@@ -4,20 +4,20 @@ import {
   useDeletePlaylistCoverMutation,
   useUploadPlaylistCoverMutation,
 } from '@/entities/playlist/api/playlistsApi'
+import type { SchemaPlaylistImagesOutputDto } from '@/shared/api/schema'
 import defaultCover from '@/shared/assets/images/image.png'
-import type { Images } from '@/shared/model/types'
 import { errorToast } from '@/shared/lib/utils'
 
 type Props = {
   playlistId: string;
-  images: Images
+  images: SchemaPlaylistImagesOutputDto
 };
 
 export const PlaylistCover = ({playlistId, images}: Props) => {
   const [uploadPlaylistCover] = useUploadPlaylistCoverMutation();
   const [deletePlaylistCover] = useDeletePlaylistCoverMutation();
 
-  const originalCover = images.main.find(img => img.type === 'original')
+  const originalCover = images.main?.find((img) => img.type === 'original')
   const src = originalCover ? originalCover.url : defaultCover
 
   const uploadCoverHandler = (e: ChangeEvent<HTMLInputElement>) => {

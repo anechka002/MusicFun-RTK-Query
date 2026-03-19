@@ -10,6 +10,7 @@ export const TracksList = ({tracks}: Props) => {
     <div className={s.list}>
       {tracks.map(track => {
         const { title, user, attachments } = track.attributes
+        const firstAttachment = attachments[0]
 
         return (
           <div key={track.id} className={s.item}>
@@ -17,7 +18,7 @@ export const TracksList = ({tracks}: Props) => {
               <p>Title: {title}</p>
               <p>Name: {user.name}</p>
             </div>
-            {attachments.length ? <audio controls src={attachments[0].url} /> : 'no file'}
+            {firstAttachment ? <audio controls src={firstAttachment.url} /> : 'no file'}
           </div>
         )
       })}

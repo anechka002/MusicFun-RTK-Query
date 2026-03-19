@@ -23,7 +23,7 @@ export const useInfinityScroll = ({hasNextPage, fetchNextPage, isFetching, rootM
     // https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API
     const observer = new IntersectionObserver((entries) => {
         // entries - наблюдаемый элемент
-        if(entries.length > 0 && entries[0].isIntersecting) {
+        if(entries[0]?.isIntersecting) {
           loadMoreHandler()
         }
       },
