@@ -1,8 +1,13 @@
 import {useForm, type SubmitHandler} from "react-hook-form"
-import type { CreatePlaylistArgs } from '@/entities/playlist/api/playlistsApi.types'
 import { useCreatePlaylistMutation } from '@/entities/playlist/api/playlistsApi'
 import s from './CreatePlaylistForm.module.css'
 import { handleErrors } from '@/shared/lib/utils/handleErrors'
+import {
+  mapCreatePlaylistPayload
+} from "@/features/create-playlist/model/mappers/mapCreatePlaylistPayload.ts";
+import type {
+  CreatePlaylistFormValues
+} from "@/features/create-playlist/model/types.ts";
 
 export const CreatePlaylistForm = () => {
   const {
@@ -10,12 +15,14 @@ export const CreatePlaylistForm = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreatePlaylistArgs>({})
+  } = useForm<CreatePlaylistFormValues>({})
 
   const [createPlaylist] = useCreatePlaylistMutation()
 
-  const onSubmit: SubmitHandler<CreatePlaylistArgs> = data => {
-    createPlaylist(data)
+  const onSubmit: SubmitHandler<CreatePlaylistFormValues> = data => {
+    const payload = mapCreatePlaylistPayload(data)
+
+    createPlaylist(payload)
       .unwrap()
       .then(() => {
         reset()
@@ -42,7 +49,7 @@ export const CreatePlaylistForm = () => {
         <input {...register('description')} placeholder={'description'} />
       </div>
       {errors.description && <span className={s.errorMessage}>{errors.description.message}</span>}
-      <button>create playlist</button>
+      <button type={'submit'}>create playlist</button>
     </form>
   )
 }

@@ -1,11 +1,13 @@
 import { useUpdatePlaylistMutation } from '@/entities/playlist/api/playlistsApi';
 import { type SubmitHandler, type UseFormHandleSubmit, type UseFormRegister } from 'react-hook-form';
-import type { UpdatePlaylistArgs } from '@/entities/playlist/api/playlistsApi.types';
+import type {
+  UpdatePlaylistFormValues
+} from "@/entities/playlist/api/playlistsApi.types.ts";
 
 type Props = {
   playlistId: string
-  register: UseFormRegister<UpdatePlaylistArgs>
-  handleSubmit: UseFormHandleSubmit<UpdatePlaylistArgs>
+  register: UseFormRegister<UpdatePlaylistFormValues>
+  handleSubmit: UseFormHandleSubmit<UpdatePlaylistFormValues>
   editPlaylist: (playlist: null) => void
   setPlaylistId: (playlistId: null) => void
 }
@@ -14,10 +16,24 @@ export const EditPlaylistForm = ({playlistId, register, handleSubmit, editPlayli
 
   const [updatePlaylist] = useUpdatePlaylistMutation();
 
-  const onSubmit: SubmitHandler<UpdatePlaylistArgs> = (data) => {
+  const onSubmit: SubmitHandler<UpdatePlaylistFormValues> = async (data) => {
     if (!playlistId) return;
-    updatePlaylist({ playlistId, body: data })
-    setPlaylistId(null)
+    try {
+      await updatePlaylist({
+        playlistId,
+        body: {
+          data: {
+            type: 'playlists',
+            attributes: data,
+          }
+        }
+      }).unwrap()
+
+      setPlaylistId(null)
+    } catch (error) {
+      console.log(error)
+    }
+
   };
 
   return (
