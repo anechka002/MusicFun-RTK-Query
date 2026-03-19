@@ -6,6 +6,10 @@ import type {
   SchemaLoginRequestPayload, SchemaRefreshOutput
 } from "@/shared/api/schema.ts";
 import {toFetchError} from "@/shared/lib/utils/handleErrors.ts";
+import {
+  handleUnauthorizedSession,
+  resetUnauthorizedHandling
+} from "@/shared/api/session.ts";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: build => ({
@@ -45,12 +49,17 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
       onQueryStarted: async(_args, {dispatch, queryFulfilled})  => {
-        const {data} = await queryFulfilled
-        localStorage.setItem(AUTH_KEYS.accessToken, data.accessToken)
-        localStorage.setItem(AUTH_KEYS.refreshToken, data.refreshToken)
+        try {
+          const {data} = await queryFulfilled
+          localStorage.setItem(AUTH_KEYS.accessToken, data.accessToken)
+          localStorage.setItem(AUTH_KEYS.refreshToken, data.refreshToken)
 
-        // Invalidate after saving tokens
-        dispatch(authApi.util.invalidateTags(['Auth']))
+          // Invalidate after saving tokens
+          resetUnauthorizedHandling()
+          dispatch(authApi.util.invalidateTags(['Auth']))
+        } catch(e) {
+          console.log(e)
+        }
       },
     }),
     logout: build.mutation<void, void>({
@@ -59,7 +68,10 @@ export const authApi = baseApi.injectEndpoints({
           const refreshToken = localStorage.getItem(AUTH_KEYS.refreshToken)
 
           if (!refreshToken) {
-            return { error: toFetchError('No refresh token found') }
+            localStorage.removeItem(AUTH_KEYS.accessToken)
+            localStorage.removeItem(AUTH_KEYS.refreshToken)
+
+            return { data: undefined }
           }
 
           await client.POST('/auth/logout', {
@@ -72,12 +84,18 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
       onQueryStarted: async(_args, {dispatch, queryFulfilled})  => {
-        await queryFulfilled
-        localStorage.removeItem(AUTH_KEYS.accessToken)
-        localStorage.removeItem(AUTH_KEYS.refreshToken)
+        try {
+          await queryFulfilled
+          localStorage.removeItem(AUTH_KEYS.accessToken)
+          localStorage.removeItem(AUTH_KEYS.refreshToken)
 
-        // Invalidate after saving tokens
-        dispatch(baseApi.util.resetApiState())
+          // Invalidate after saving tokens
+          resetUnauthorizedHandling()
+          dispatch(baseApi.util.resetApiState())
+          handleUnauthorizedSession()
+        } catch(e) {
+          console.log(e)
+        }
       }
     }),
   })
